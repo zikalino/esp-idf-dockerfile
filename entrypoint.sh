@@ -7,6 +7,92 @@ if [ $1 == "test" ] ; then
 
 echo "EXECUTING TEST"
     case $2 in
+        #
+        # prechecks below
+        #
+        check_version)
+            cd $IDF_PATH
+            tools/ci/check_idf_version.sh
+            ;;
+
+        check_rom_api_header)
+            cd $IDF_PATH
+            tools/ci/check_examples_rom_header.sh
+            tools/ci/check_api_violation.sh
+            ;;
+
+        check_python_style)
+            # needs flake8
+            python -m flake8 --config=$IDF_PATH/.flake8 --output-file=flake8_output.txt --tee --benchmark $IDF_PATH
+            ;;
+
+        test_check_kconfigs)
+            python $IDF_PATH/tools/ci/test_check_kconfigs.py
+            ;;
+
+
+        check_wifi_lib_md5)
+            # SUBMODULES_TO_FETCH: "components/esp_wifi/lib"
+            IDF_TARGET=esp32 $IDF_PATH/components/esp_wifi/test_md5/test_md5.sh
+            IDF_TARGET=esp32s2 $IDF_PATH/components/esp_wifi/test_md5/test_md5.sh
+            ;;
+
+        check_fuzzer_compilation)
+            # needs AFL
+            # image: $AFL_FUZZER_TEST_IMAGE
+            cd ${IDF_PATH}/components/lwip/test_afl_host
+            make MODE=dhcp_server
+            make MODE=dhcp_client
+            make MODE=dns
+            cd ${IDF_PATH}/components/mdns/test_afl_fuzz_host
+            make
+            ;;
+
+        check_public_headers)
+            cd $IDF_PATH
+            python tools/ci/check_public_headers.py --jobs 4 --prefix xtensa-esp32-elf-
+            ;;
+
+        check_soc_struct_headers)
+            cd $IDF_PATH
+            find ${IDF_PATH}/components/soc/*/include/soc/ -name "*_struct.h" -print0 | xargs -0 -n1 ./tools/ci/check_soc_struct_headers.py
+            ;;
+
+        check_esp_err_to_name)
+            cd ${IDF_PATH}/tools/
+            ./gen_esp_err_to_name.py
+            git diff --exit-code -- ../components/esp_common/src/esp_err_to_name.c || { echo 'Differences found. Please run gen_esp_err_to_name.py and commit the changes.'; exit 1; }
+            ;;
+
+        scan_tests)
+            # needs source or something like this
+            set_component_ut_vars
+            run_cmd python $CI_SCAN_TESTS_PY example_test $EXAMPLE_TEST_DIR -b cmake --exclude examples/build_system/idf_as_lib -c $CI_TARGET_TEST_CONFIG_FILE -o $EXAMPLE_TEST_OUTPUT_DIR
+            run_cmd python $CI_SCAN_TESTS_PY test_apps $TEST_APPS_TEST_DIR -c $CI_TARGET_TEST_CONFIG_FILE -o $TEST_APPS_OUTPUT_DIR
+            run_cmd python $CI_SCAN_TESTS_PY component_ut $COMPONENT_UT_DIRS --exclude $COMPONENT_UT_EXCLUDES -c $CI_TARGET_TEST_CONFIG_FILE -o $COMPONENT_UT_OUTPUT_DIR
+            ;;
+
+        # For release tag pipelines only, make sure the tag was created with 'git tag -a' so it will update
+        # the version returned by 'git describe'
+        check_version_tag)
+            (git cat-file -t $CI_COMMIT_REF_NAME | grep tag) || (echo "ESP-IDF versions must be annotated tags." && exit 1)
+            ;;
+
+        check_artifacts_expire_time)
+            # check if we have set expire time for all artifacts
+            python tools/ci/check_artifacts_expire_time.py
+            ;;
+
+        check_commit_msg)
+            git status
+            git log -n10 --oneline ${PIPELINE_COMMIT_SHA}
+            # commit start with "WIP: " need to be squashed before merge
+            'git log --pretty=%s origin/master..${PIPELINE_COMMIT_SHA} -- | grep -i "^WIP:" && exit 1 || exit 0'
+            ;;
+
+        #
+        # host tests below
+        #
         test_certificate_bundle_on_host)
             cd /opt/esp/idf/components/mbedtls/esp_crt_bundle/test_gen_crt_bundle/
             ./test_gen_crt_bundle.py
@@ -83,7 +169,7 @@ echo "EXECUTING TEST"
         test_eh_frame_parser)
 
             apt-get update
-            apt-get install libbsd-dev
+            apt-get -y install libbsd-dev
 
             cd ${IDF_PATH}/components/esp_system/test_eh_frame_parser
             make
@@ -99,8 +185,8 @@ echo "EXECUTING TEST"
         test_esp_event)
 
             apt-get update
-            apt-get install ruby-full
-            apt-get install libbsd-dev
+            apt-get -y install ruby-full
+            apt-get -y install libbsd-dev
 
             cd ${IDF_PATH}/components/esp_event/host_test/esp_event_unit_test
             idf.py build
@@ -111,7 +197,7 @@ echo "EXECUTING TEST"
         test_esp_timer_cxx)
 
             apt-get update
-            apt-get install ruby-full
+            apt-get -y install ruby-full
 
             cd ${IDF_PATH}/examples/cxx/experimental/experimental_cpp_component/host_test/esp_timer
             idf.py build
@@ -126,8 +212,8 @@ echo "EXECUTING TEST"
 
         test_fatfs_on_host)
 
-            Apt-get update
-            apt-get install libbsd-dev
+            apt-get update
+            apt-get -y install libbsd-dev
 
             cd $IDF_PATH/components/fatfs/test_fatfs_host/
             make test
@@ -143,7 +229,7 @@ echo "EXECUTING TEST"
         test_i2c_cxx)
 
             apt-get update
-            apt-get install ruby-full
+            apt-get -y install ruby-full
 
             cd ${IDF_PATH}/examples/cxx/experimental/experimental_cpp_component/host_test/i2c
             Idf.py build
@@ -191,7 +277,7 @@ echo "EXECUTING TEST"
         test_linux_example)
 
             apt-get update
-            apt-get install ruby-full
+            apt-get -y install ruby-full
 
             cd ${IDF_PATH}/examples/build_system/cmake/linux_host_app
             Idf.py build
@@ -232,7 +318,7 @@ echo "EXECUTING TEST"
         test_multi_heap_on_host)
 
             apt-get update
-            apt-get install libbsd-dev
+            apt-get -y install libbsd-dev
 
             cd $IDF_PATH/components/heap/test_multi_heap_host
             ./test_all_configs.sh
@@ -247,7 +333,7 @@ echo "EXECUTING TEST"
         test_nvs_page)
 
             apt-get update
-            apt-get install ruby
+            apt-get -y install ruby
 
             cd ${IDF_PATH}/components/nvs_flash/host_test/nvs_page_test
             idf.py build
@@ -262,7 +348,7 @@ echo "EXECUTING TEST"
 
         test_reproducible_build)
 
-            Cd $IDF_PATH
+            cd $IDF_PATH
             ./tools/ci/test_reproducible_build.sh
             ;;
         
@@ -277,7 +363,7 @@ echo "EXECUTING TEST"
         test_spi_cxx)
 
             apt-get update
-            apt-get install ruby-full
+            apt-get -y install ruby-full
 
             cd ${IDF_PATH}/examples/cxx/experimental/experimental_cpp_component/host_test/spi
             idf.py build
@@ -286,9 +372,8 @@ echo "EXECUTING TEST"
 
         test_spiffs_on_host)
 
-            Apt-get update
-            apt-get install libbsd-dev
-
+            apt-get update
+            apt-get -y install libbsd-dev
 
             cd $IDF_PATH/components/spiffs/test_spiffs_host/
             make test
@@ -299,7 +384,7 @@ echo "EXECUTING TEST"
         test_system_cxx)
 
             apt-get update
-            apt-get install ruby-full
+            apt-get -y install ruby-full
 
             cd /opt/esp/idf/examples/cxx/experimental/experimental_cpp_component/host_test/system
             idf.py build
@@ -316,8 +401,8 @@ echo "EXECUTING TEST"
 
         test_wl_on_host)
 
-            Apt-get update
-            apt-get install libbsd-dev
+            apt-get update
+            apt-get -y install libbsd-dev
 
             cd $IDF_PATH/components/wear_levelling/test_wl_host
             make test
