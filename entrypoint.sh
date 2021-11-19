@@ -38,6 +38,7 @@ if [ $1 == "test" ] ; then
             ;;
 
         check_fuzzer_compilation)
+            # XXXXXXX
             # needs AFL
             # image: $AFL_FUZZER_TEST_IMAGE
             cd ${IDF_PATH}/components/lwip/test_afl_host
@@ -195,7 +196,6 @@ if [ $1 == "test" ] ; then
         test_esp_event)
             # apt-get -y install ruby
             # apt-get -y install libbsd-dev
-
             cd ${IDF_PATH}/components/esp_event/host_test/esp_event_unit_test
             idf.py build
             build/test_esp_event_host.elf
@@ -203,10 +203,7 @@ if [ $1 == "test" ] ; then
 
 
         test_esp_timer_cxx)
-
-            apt-get update
-            apt-get -y install ruby-full
-
+            # apt-get -y install ruby
             cd ${IDF_PATH}/examples/cxx/experimental/experimental_cpp_component/host_test/esp_timer
             idf.py build
             build/test_esp_timer_cxx_host.elf
@@ -219,10 +216,13 @@ if [ $1 == "test" ] ; then
             ;;
 
         test_fatfs_on_host)
-
-            apt-get update
-            apt-get -y install libbsd-dev
-
+            # apt-get -y install libbsd-dev
+            # apt-get -y purge libc6-dev
+            # apt-get -y install libc6-dev
+            # apt-get -y install libc6-dev-i386
+            # apt-get -y install g++
+            # apt-get -y install g++-multilib
+            # apt-get -y install gcc-multilib
             cd $IDF_PATH/components/fatfs/test_fatfs_host/
             make test
             ;;
@@ -235,12 +235,10 @@ if [ $1 == "test" ] ; then
             ;;
 
         test_i2c_cxx)
-
-            apt-get update
-            apt-get -y install ruby-full
+            # apt-get -y install ruby
 
             cd ${IDF_PATH}/examples/cxx/experimental/experimental_cpp_component/host_test/i2c
-            Idf.py build
+            idf.py build
             build/test_i2c_cxx_host.elf
             ;;
 
@@ -314,9 +312,7 @@ if [ $1 == "test" ] ; then
             ;;
 
         test_multi_heap_on_host)
-
-            apt-get update
-            apt-get -y install libbsd-dev
+            # apt-get -y install libbsd-dev
 
             cd $IDF_PATH/components/heap/test_multi_heap_host
             ./test_all_configs.sh
@@ -329,9 +325,7 @@ if [ $1 == "test" ] ; then
             ;;
 
         test_nvs_page)
-
-            apt-get update
-            apt-get -y install ruby
+            # apt-get -y install ruby
 
             cd ${IDF_PATH}/components/nvs_flash/host_test/nvs_page_test
             idf.py build
@@ -339,11 +333,9 @@ if [ $1 == "test" ] ; then
             ;;
 
         test_partition_table)
-
             cd $IDF_PATH/components/partition_table/test_gen_esp32part_host
             ./gen_esp32part_tests.py
             ;;
-
         test_reproducible_build)
 
             cd $IDF_PATH
@@ -351,7 +343,6 @@ if [ $1 == "test" ] ; then
             ;;
         
         test_rom_on_linux)
-
             cd ${IDF_PATH}/components/esp_rom/host_test/rom_test
             idf.py build
             build/test_rom_host.elf
@@ -359,9 +350,7 @@ if [ $1 == "test" ] ; then
 
 
         test_spi_cxx)
-
-            apt-get update
-            apt-get -y install ruby-full
+            apt-get -y install ruby
 
             cd ${IDF_PATH}/examples/cxx/experimental/experimental_cpp_component/host_test/spi
             idf.py build
@@ -369,9 +358,7 @@ if [ $1 == "test" ] ; then
             ;;
 
         test_spiffs_on_host)
-
-            apt-get update
-            apt-get -y install libbsd-dev
+            # apt-get -y install libbsd-dev
 
             cd $IDF_PATH/components/spiffs/test_spiffs_host/
             make test
@@ -380,9 +367,7 @@ if [ $1 == "test" ] ; then
             ;;
 
         test_system_cxx)
-
-            apt-get update
-            apt-get -y install ruby-full
+            # apt-get -y install ruby
 
             cd /opt/esp/idf/examples/cxx/experimental/experimental_cpp_component/host_test/system
             idf.py build
@@ -396,8 +381,7 @@ if [ $1 == "test" ] ; then
             ;;
 
         test_wl_on_host)
-            apt-get update
-            apt-get -y install libbsd-dev
+            # apt-get -y install libbsd-dev
 
             cd $IDF_PATH/components/wear_levelling/test_wl_host
             make test
