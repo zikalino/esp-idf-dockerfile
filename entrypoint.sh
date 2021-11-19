@@ -5,7 +5,7 @@ set -e
 
 if [ $1 == "test" ] ; then
 
-echo "EXECUTING TEST"
+    echo "------------------------------------------> EXECUTING TEST"
     case $2 in
         #
         # prechecks below
@@ -104,28 +104,22 @@ echo "EXECUTING TEST"
             ;;
 
         test_confserver)
-            pip install pexpect
-
+            # pip install pexpect
             cd /opt/esp/idf/tools/kconfig_new/test/confserver
             ./test_confserver.py
             ;;
 
         test_cxx_gpio)
-
-            apt-get update
-            apt-get -y install ruby-full
-
+            # apt-get -y install ruby
             cd ${IDF_PATH}/examples/cxx/experimental/experimental_cpp_component/host_test/gpio
             idf.py build
             build/test_gpio_cxx_host.elf
             ;;
 
         test_detect_python)
-            apt-get update
-            apt-get -y install fish
-            apt-get -y install zsh
-            apt-get -y install shellcheck
-
+            # apt-get -y install fish
+            # apt-get -y install zsh
+            # apt-get -y install shellcheck
             cd ${IDF_PATH}
             shellcheck -s sh tools/detect_python.sh
             shellcheck -s bash tools/detect_python.sh
@@ -138,32 +132,48 @@ echo "EXECUTING TEST"
 
 
         test_efuse_table_on_host_esp32)
-
+            cd $IDF_PATH/components/efuse
             export IDF_TARGET=esp32
             ./efuse_table_gen.py -t "${IDF_TARGET}" ${IDF_PATH}/components/efuse/${IDF_TARGET}/esp_efuse_table.csv
             git diff --exit-code -- ${IDF_TARGET}/esp_efuse_table.c || { echo 'Differences found for ${IDF_TARGET} target. Please run make efuse_common_table or idf.py efuse-common-table and commit the changes.'; exit 1; }
-            cd ${IDF_PATH}/components/efuse/test_efuse_host
+            cd $IDF_PATH/components/efuse/test_efuse_host
             ./efuse_tests.py
             ;;
 
         test_efuse_table_on_host_esp32c3)
-
-            ?
+            cd $IDF_PATH/components/efuse
+            export IDF_TARGET=esp32c3
+            ./efuse_table_gen.py -t "${IDF_TARGET}" ${IDF_PATH}/components/efuse/${IDF_TARGET}/esp_efuse_table.csv
+            git diff --exit-code -- ${IDF_TARGET}/esp_efuse_table.c || { echo 'Differences found for ${IDF_TARGET} target. Please run make efuse_common_table or idf.py efuse-common-table and commit the changes.'; exit 1; }
+            cd $IDF_PATH/components/efuse/test_efuse_host
+            ./efuse_tests.py
             ;;
 
         test_efuse_table_on_host_esp32h2)
-
-            ?
+            cd $IDF_PATH/components/efuse
+            export IDF_TARGET=esp32h2
+            ./efuse_table_gen.py -t "${IDF_TARGET}" ${IDF_PATH}/components/efuse/${IDF_TARGET}/esp_efuse_table.csv
+            git diff --exit-code -- ${IDF_TARGET}/esp_efuse_table.c || { echo 'Differences found for ${IDF_TARGET} target. Please run make efuse_common_table or idf.py efuse-common-table and commit the changes.'; exit 1; }
+            cd $IDF_PATH/components/efuse/test_efuse_host
+            ./efuse_tests.py
             ;;
 
         test_efuse_table_on_host_esp32s2)
-
-            ?
+            cd $IDF_PATH/components/efuse
+            export IDF_TARGET=esp32s2
+            ./efuse_table_gen.py -t "${IDF_TARGET}" ${IDF_PATH}/components/efuse/${IDF_TARGET}/esp_efuse_table.csv
+            git diff --exit-code -- ${IDF_TARGET}/esp_efuse_table.c || { echo 'Differences found for ${IDF_TARGET} target. Please run make efuse_common_table or idf.py efuse-common-table and commit the changes.'; exit 1; }
+            cd $IDF_PATH/components/efuse/test_efuse_host
+            ./efuse_tests.py
             ;;
 
         test_efuse_table_on_host_esp32s3)
-
-            ?
+            cd $IDF_PATH/components/efuse
+            export IDF_TARGET=esp32s3
+            ./efuse_table_gen.py -t "${IDF_TARGET}" ${IDF_PATH}/components/efuse/${IDF_TARGET}/esp_efuse_table.csv
+            git diff --exit-code -- ${IDF_TARGET}/esp_efuse_table.c || { echo 'Differences found for ${IDF_TARGET} target. Please run make efuse_common_table or idf.py efuse-common-table and commit the changes.'; exit 1; }
+            cd $IDF_PATH/components/efuse/test_efuse_host
+            ./efuse_tests.py
             ;;
 
         test_eh_frame_parser)
@@ -183,10 +193,8 @@ echo "EXECUTING TEST"
             ;;
 
         test_esp_event)
-
-            apt-get update
-            apt-get -y install ruby-full
-            apt-get -y install libbsd-dev
+            # apt-get -y install ruby
+            # apt-get -y install libbsd-dev
 
             cd ${IDF_PATH}/components/esp_event/host_test/esp_event_unit_test
             idf.py build
@@ -249,9 +257,7 @@ echo "EXECUTING TEST"
             ;;
 
         test_idf_size)
-
-            pip install coverage
-
+            # pip install coverage
             cd ${IDF_PATH}/tools/test_idf_size
             ./test.sh
             ;;
@@ -275,12 +281,9 @@ echo "EXECUTING TEST"
             ;;
 
         test_linux_example)
-
-            apt-get update
-            apt-get -y install ruby-full
-
+            # apt-get -y install ruby
             cd ${IDF_PATH}/examples/build_system/cmake/linux_host_app
-            Idf.py build
+            idf.py build
             timeout 5 ./build/linux_host_app.elf >test.log || true
             grep "Restarting" test.log
             ;;
@@ -290,27 +293,22 @@ echo "EXECUTING TEST"
             cd ${IDF_PATH}/components/log/host_test/log_test
             idf.py build
             build/test_log_host.elf
+            ;;
 
-            test_logtrace_proc
-
-            pip install coverage
-
+        test_logtrace_proc)
+            # pip install coverage
             cd ${IDF_PATH}/tools/esp_app_trace/test/logtrace
             ./test.sh
             ;;
 
         test_mkdfu)
-
-            pip install pexpect
-
+            # pip install pexpect
             cd ${IDF_PATH}/tools/test_mkdfu
             ./test_mkdfu.py
             ;;
 
         test_mkuf2)
-
-            pip install pexpect
-
+            # pip install pexpect
             cd ${IDF_PATH}/tools/test_mkuf2
             ./test_mkuf2.py
             ;;
@@ -392,15 +390,12 @@ echo "EXECUTING TEST"
             ;;
 
         test_sysviewtrace_proc)
-
-            pip install coverage
-
+            # pip install coverage
             cd ${IDF_PATH}/tools/esp_app_trace/test/sysview
             ./test.sh
             ;;
 
         test_wl_on_host)
-
             apt-get update
             apt-get -y install libbsd-dev
 
@@ -409,6 +404,7 @@ echo "EXECUTING TEST"
             ;;
 
     esac
+    echo "------------------------------------------< COMPLETED"
 fi
 
 exec "$@"
